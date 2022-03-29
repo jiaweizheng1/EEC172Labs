@@ -140,7 +140,7 @@ void LEDBlinkyRoutine()
         {
             if(flag != 0)
             {
-                Message("SW3 pressed");
+                Message("SW3 pressed\n");
             }
             flag = 0;
         }
@@ -148,7 +148,7 @@ void LEDBlinkyRoutine()
         {
             if(flag != 1)
             {
-                Message("SW2 pressed");
+                Message("SW2 pressed\n");
             }
             flag = 1;
         }
