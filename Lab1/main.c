@@ -41,6 +41,10 @@
 //                        connected to the GPIOs on the LP are used to indicate 
 //                        the GPIO output. The GPIOs are driven high-low 
 //                        periodically in order to turn on-off the LEDs.
+// Application Details  -
+// http://processors.wiki.ti.com/index.php/CC32xx_Blinky_Application
+// or
+// docs\examples\CC32xx_Blinky_Application.pdf
 //
 //*****************************************************************************
 
@@ -68,28 +72,16 @@
 #include "gpio.h"
 #include "utils.h"
 
-//new
-#include "uart.h"
-#include "interrupt.h"
-#include "pinmux.h"
+//new libraries to be included
 #include "uart_if.h"
+#include "stdint.h"
 
 // Common interface includes
 #include "gpio_if.h"
 
 #include "pinmux.h"
 
-//*****************************************************************************
-//                          MACROS
-//*****************************************************************************
-#define APPLICATION_VERSION  "1.4.0"
-#define APP_NAME             "UART Echo"
-#define CONSOLE              UARTA0_BASE
-#define UartGetChar()        MAP_UARTCharGet(CONSOLE)
-#define UartPutChar(c)       MAP_UARTCharPut(CONSOLE,c)
-#define MAX_STRING_LENGTH    80
-
-
+#define APPLICATION_VERSION     "1.1.1"
 
 //*****************************************************************************
 //                 GLOBAL VARIABLES -- Start
@@ -103,6 +95,7 @@ extern uVectorEntry __vector_table;
 //*****************************************************************************
 //                 GLOBAL VARIABLES -- End
 //*****************************************************************************
+
 
 //*****************************************************************************
 //                      LOCAL FUNCTION PROTOTYPES                           
@@ -135,12 +128,86 @@ void LEDBlinkyRoutine()
     // The values driven are as required by the LEDs on the LP.
     //
     GPIO_IF_LedOff(MCU_ALL_LED_IND);
+
+    int flag = -1; //initially invalid; not in sw3 or sw2 mode
+
     while(1)
     {
-        //
-        // Alternately toggle hi-low each of the GPIOs
-        // to switch the corresponding LED on/off.
-        //
+        int32_t sw3 = GPIOPinRead(GPIOA1_BASE, 0x20);
+        int32_t sw2 = GPIOPinRead(GPIOA2_BASE, 0x40);
+
+        if(sw3 != 0)
+        {
+            if(flag != 0)
+            {
+                Message("SW3 pressed");
+            }
+            flag = 0;
+        }
+        if(sw2 != 0)
+        {
+            if(flag != 1)
+            {
+                Message("SW2 pressed");
+            }
+            flag = 1;
+        }
+
+        if(flag == 0)
+        {
+            MAP_UtilsDelay(8000000);//mimic 000
+            MAP_UtilsDelay(8000000);
+            GPIO_IF_LedOn(MCU_RED_LED_GPIO);
+            MAP_UtilsDelay(8000000);
+            GPIO_IF_LedOff(MCU_RED_LED_GPIO);
+            MAP_UtilsDelay(8000000);
+            GPIO_IF_LedOn(MCU_ORANGE_LED_GPIO);
+            MAP_UtilsDelay(8000000);
+            GPIO_IF_LedOff(MCU_ORANGE_LED_GPIO);
+            MAP_UtilsDelay(8000000);
+            GPIO_IF_LedOn(MCU_RED_LED_GPIO);
+            GPIO_IF_LedOn(MCU_ORANGE_LED_GPIO);
+            MAP_UtilsDelay(8000000);
+            GPIO_IF_LedOff(MCU_RED_LED_GPIO);
+            GPIO_IF_LedOff(MCU_ORANGE_LED_GPIO);
+            MAP_UtilsDelay(8000000);
+            GPIO_IF_LedOn(MCU_GREEN_LED_GPIO);
+            MAP_UtilsDelay(8000000);
+            GPIO_IF_LedOff(MCU_GREEN_LED_GPIO);
+            MAP_UtilsDelay(8000000);
+            GPIO_IF_LedOn(MCU_RED_LED_GPIO);
+            GPIO_IF_LedOn(MCU_GREEN_LED_GPIO);
+            MAP_UtilsDelay(8000000);
+            GPIO_IF_LedOff(MCU_RED_LED_GPIO);
+            GPIO_IF_LedOff(MCU_GREEN_LED_GPIO);
+            MAP_UtilsDelay(8000000);
+            GPIO_IF_LedOn(MCU_ORANGE_LED_GPIO);
+            GPIO_IF_LedOn(MCU_GREEN_LED_GPIO);
+            MAP_UtilsDelay(8000000);
+            GPIO_IF_LedOff(MCU_ORANGE_LED_GPIO);
+            GPIO_IF_LedOff(MCU_GREEN_LED_GPIO);
+            MAP_UtilsDelay(8000000);
+            GPIO_IF_LedOn(MCU_RED_LED_GPIO);
+            GPIO_IF_LedOn(MCU_ORANGE_LED_GPIO);
+            GPIO_IF_LedOn(MCU_GREEN_LED_GPIO);
+            MAP_UtilsDelay(8000000);
+            GPIO_IF_LedOff(MCU_RED_LED_GPIO);
+            GPIO_IF_LedOff(MCU_ORANGE_LED_GPIO);
+            GPIO_IF_LedOff(MCU_GREEN_LED_GPIO);
+
+        }
+        else if(flag == 1)
+        {
+            MAP_UtilsDelay(8000000);
+            GPIO_IF_LedOn(MCU_RED_LED_GPIO);
+            GPIO_IF_LedOn(MCU_ORANGE_LED_GPIO);
+            GPIO_IF_LedOn(MCU_GREEN_LED_GPIO);
+            MAP_UtilsDelay(8000000);
+            GPIO_IF_LedOff(MCU_RED_LED_GPIO);
+            GPIO_IF_LedOff(MCU_ORANGE_LED_GPIO);
+            GPIO_IF_LedOff(MCU_GREEN_LED_GPIO);
+        }
+        /*
         MAP_UtilsDelay(8000000);
         GPIO_IF_LedOn(MCU_RED_LED_GPIO);
         MAP_UtilsDelay(8000000);
@@ -153,6 +220,7 @@ void LEDBlinkyRoutine()
         GPIO_IF_LedOn(MCU_GREEN_LED_GPIO);
         MAP_UtilsDelay(8000000);
         GPIO_IF_LedOff(MCU_GREEN_LED_GPIO);
+        */
     }
 
 }
@@ -214,22 +282,20 @@ main()
     // Set up the GPIO lines to mode 0 (GPIO)
     //
     PinMuxConfig();
-
-    InitTerm();
-    ClearTerm();
-
-    Message("\t\t****************************************************\n\r");
-    Message("\t\t\t        CC3200 GPIO Application        \n\r");
-    Message("\t\t****************************************************\n\r");
-    Message("\n\n\n\r");
-    Message("\t\t****************************************************\n\r");
-    Message("\t\t\t        Push SW3 to start LED binary counting        \n\r");
-    Message("\t\t\t        Push SW2 to blink LEDs on and off        \n\r");
-    Message("\t\t****************************************************\n\r");
-
     GPIO_IF_LedConfigure(LED1|LED2|LED3);
 
     GPIO_IF_LedOff(MCU_ALL_LED_IND);
+    
+    InitTerm();
+    ClearTerm();
+    Message("\t\t*************************************************\n\r");
+    Message("\t\t        CC3200 GPIO Application        \n\r");
+    Message("\t\t*************************************************\n\r");
+    Message("\n\n\r");
+    Message("\t\t****************************************************\n\r");
+    Message("\t\t        Push SW3 to start LED binary counting        \n\r");
+    Message("\t\t        Push SW2 to blink LEDs on and off        \n\r");
+    Message("\t\t****************************************************\n\r");
 
     //
     // Start the LEDBlinkyRoutine
