@@ -129,7 +129,7 @@ void LEDBlinkyRoutine()
     //
     GPIO_IF_LedOff(MCU_ALL_LED_IND);
 
-    int flag = -1; //initially invalid; not in sw3 or sw2 mode
+    int state = -1; //initially invalid; not in sw3 or sw2 mode
 
     while(1)
     {
@@ -138,91 +138,54 @@ void LEDBlinkyRoutine()
 
         if(sw3 != 0)
         {
-            if(flag != 0)
+            if(state < 0 || state > 7)
             {
-                Message("SW3 pressed\n");
+                Message("SW3 pressed\n\r");
+                state = 0;
             }
-            flag = 0;
+            GPIOPinWrite(GPIOA3_BASE, 0x10, 0);
+
         }
         if(sw2 != 0)
         {
-            if(flag != 1)
+            if(state < 8)
             {
-                Message("SW2 pressed\n");
+                Message("SW2 pressed\n\r");
+                state = 8;
             }
-            flag = 1;
+            GPIOPinWrite(GPIOA3_BASE, 0x10, 0x10);
         }
 
-        if(flag == 0)
+        if(state != -1)
         {
-            MAP_UtilsDelay(8000000);//mimic 000
             MAP_UtilsDelay(8000000);
-            GPIO_IF_LedOn(MCU_RED_LED_GPIO);
-            MAP_UtilsDelay(8000000);
-            GPIO_IF_LedOff(MCU_RED_LED_GPIO);
-            MAP_UtilsDelay(8000000);
-            GPIO_IF_LedOn(MCU_ORANGE_LED_GPIO);
-            MAP_UtilsDelay(8000000);
-            GPIO_IF_LedOff(MCU_ORANGE_LED_GPIO);
-            MAP_UtilsDelay(8000000);
-            GPIO_IF_LedOn(MCU_RED_LED_GPIO);
-            GPIO_IF_LedOn(MCU_ORANGE_LED_GPIO);
-            MAP_UtilsDelay(8000000);
-            GPIO_IF_LedOff(MCU_RED_LED_GPIO);
-            GPIO_IF_LedOff(MCU_ORANGE_LED_GPIO);
-            MAP_UtilsDelay(8000000);
-            GPIO_IF_LedOn(MCU_GREEN_LED_GPIO);
-            MAP_UtilsDelay(8000000);
-            GPIO_IF_LedOff(MCU_GREEN_LED_GPIO);
-            MAP_UtilsDelay(8000000);
-            GPIO_IF_LedOn(MCU_RED_LED_GPIO);
-            GPIO_IF_LedOn(MCU_GREEN_LED_GPIO);
-            MAP_UtilsDelay(8000000);
-            GPIO_IF_LedOff(MCU_RED_LED_GPIO);
-            GPIO_IF_LedOff(MCU_GREEN_LED_GPIO);
-            MAP_UtilsDelay(8000000);
-            GPIO_IF_LedOn(MCU_ORANGE_LED_GPIO);
-            GPIO_IF_LedOn(MCU_GREEN_LED_GPIO);
-            MAP_UtilsDelay(8000000);
-            GPIO_IF_LedOff(MCU_ORANGE_LED_GPIO);
-            GPIO_IF_LedOff(MCU_GREEN_LED_GPIO);
-            MAP_UtilsDelay(8000000);
-            GPIO_IF_LedOn(MCU_RED_LED_GPIO);
-            GPIO_IF_LedOn(MCU_ORANGE_LED_GPIO);
-            GPIO_IF_LedOn(MCU_GREEN_LED_GPIO);
+            if(state == 1 || state == 3 || state == 5 || state == 7 || state == 8)
+            {
+                GPIO_IF_LedOn(MCU_RED_LED_GPIO);
+            }
+            if(state == 2 || state == 3 || state == 6 || state == 7 || state == 8)
+            {
+                GPIO_IF_LedOn(MCU_ORANGE_LED_GPIO);
+            }
+            if(state >= 4)
+            {
+                GPIO_IF_LedOn(MCU_GREEN_LED_GPIO);
+            }
             MAP_UtilsDelay(8000000);
             GPIO_IF_LedOff(MCU_RED_LED_GPIO);
             GPIO_IF_LedOff(MCU_ORANGE_LED_GPIO);
             GPIO_IF_LedOff(MCU_GREEN_LED_GPIO);
 
+            if(state == 7)  //update state
+            {
+                state = 0;
+            }
+            else if(state < 8)
+            {
+                state++;
+            }
         }
-        else if(flag == 1)
-        {
-            MAP_UtilsDelay(8000000);
-            GPIO_IF_LedOn(MCU_RED_LED_GPIO);
-            GPIO_IF_LedOn(MCU_ORANGE_LED_GPIO);
-            GPIO_IF_LedOn(MCU_GREEN_LED_GPIO);
-            MAP_UtilsDelay(8000000);
-            GPIO_IF_LedOff(MCU_RED_LED_GPIO);
-            GPIO_IF_LedOff(MCU_ORANGE_LED_GPIO);
-            GPIO_IF_LedOff(MCU_GREEN_LED_GPIO);
-        }
-        /*
-        MAP_UtilsDelay(8000000);
-        GPIO_IF_LedOn(MCU_RED_LED_GPIO);
-        MAP_UtilsDelay(8000000);
-        GPIO_IF_LedOff(MCU_RED_LED_GPIO);
-        MAP_UtilsDelay(8000000);
-        GPIO_IF_LedOn(MCU_ORANGE_LED_GPIO);
-        MAP_UtilsDelay(8000000);
-        GPIO_IF_LedOff(MCU_ORANGE_LED_GPIO);
-        MAP_UtilsDelay(8000000);
-        GPIO_IF_LedOn(MCU_GREEN_LED_GPIO);
-        MAP_UtilsDelay(8000000);
-        GPIO_IF_LedOff(MCU_GREEN_LED_GPIO);
-        */
     }
-
 }
 //*****************************************************************************
 //
