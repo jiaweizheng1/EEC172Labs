@@ -32,7 +32,7 @@ void writeCommand(unsigned char c) {
 */
 	//reference: SSD1351-Revision.pdf -> table 8-5
 
-	unsigned char dummy;
+	unsigned long dummy;
 	
 	//Write low to pin 15
 	GPIOPinWrite(GPIOA2_BASE, 0x40, 0)
@@ -40,7 +40,7 @@ void writeCommand(unsigned char c) {
 	MAP_SPICSEnable(GSPI_BASE);
 	
 	MAP_SPIDataPut(GSPI_BASE, c);
-	MAP_SPIDataGet(GSPI_BASE, dummy);
+	MAP_SPIDataGet(GSPI_BASE, &dummy);
 	
 	MAP_SPICSDIsable(GSPI_BASE);
 }
@@ -53,7 +53,7 @@ void writeData(unsigned char c) {
 *  SPI.
 */
 	
-	unsigned char dummy;
+	unsigned long dummy;
 	
 	//Write high to pin 15
 	GPIOPinWrite(GPIOA2_BASE, 0x40, 1)
@@ -61,7 +61,7 @@ void writeData(unsigned char c) {
 	MAP_SPICSEnable(GSPI_BASE);
 	
 	MAP_SPIDataPut(GSPI_BASE, c);
-	MAP_SPIDataGet(GSPI_BASE, dummy);
+	MAP_SPIDataGet(GSPI_BASE, &dummy);
 	
 	MAP_SPICSDIsable(GSPI_BASE);
 }
